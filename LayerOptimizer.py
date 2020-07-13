@@ -40,13 +40,12 @@ def run(pseqs, scaled_vals):
                 model.fit(train_x, train_y, epochs=num_epochs, batch_size=batch_size, verbose=0)
                 test_loss = model.evaluate(test_x, test_y, verbose=0)
                 results[i, j, 0] = test_loss
-            finally:
+            except ValueError:
                 results[i, j, 0] = -1
-                continue
 
     iopt = 0
     jopt = 0
-    min_acc = np.amax(results, axis=2)
+    min_acc = np.amax(np.amax(results, axis=0))
     print("Evaluating results")
     for i in range(imin, imax):
         for j in range(jmin, jmax):
@@ -57,6 +56,7 @@ def run(pseqs, scaled_vals):
                     iopt = i
                     jopt = j
 
+    print("i_opt = ", iopt, "; j_opt = ",  jopt)
     output = build_sequential_model(input_shape, iopt, jopt)
     output.fit(train_x, train_y, epochs=num_epochs, batch_size=batch_size, verbose=0)
     return output, split

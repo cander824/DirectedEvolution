@@ -14,7 +14,10 @@
 
 import DataPreprocessing
 import LayerOptimizer
+import MutationGenerator
 import os
+import keras
+from sklearn.model_selection import train_test_split
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 file = 'proteindata.csv'
@@ -22,9 +25,18 @@ file = 'proteindata.csv'
 
 def main():
     pseqs, scaled_values = DataPreprocessing.run(file)
-    opt_model, split = LayerOptimizer.run(pseqs, scaled_values)
+    opt_model = None
+    split = train_test_split(pseqs, scaled_values)
+    try:
+        opt_model = keras.models.load_model("opt_model")
+    except:
+        opt_model = LayerOptimizer.run(split, scaled_values)
+
     train_x, test_x, train_y, test_y = split
     opt_model.evaluate(test_x, test_y)
+    single_point_mutation_libary = MutationGenerator._build_single_point_mutation_library_(pseqs)
+    optimals = MutationGenerator._find_optimal_point_mutations_(single_point_mutation_libary, opt_model)
+    MutationGenerator._stack_mutations_(optimals, opt_model)
     print("Done")
 
 

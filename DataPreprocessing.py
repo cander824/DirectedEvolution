@@ -16,6 +16,10 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 
+aminoacids = ['G', 'A', 'L', 'M', 'F', 'W', 'K', 'Q', 'E', 'S', 'P', 'V', 'I', 'C', 'Y', 'H', 'R', 'N', 'D', 'T']
+label_encoder = LabelEncoder().fit(np.array(aminoacids))
+onehot_encoder = OneHotEncoder(sparse=False, dtype=int)
+
 
 def string_to_array(my_string):
     my_string = my_string.upper()
@@ -24,12 +28,7 @@ def string_to_array(my_string):
 
 
 def one_hot_encoder(pepseq_array):
-    aminoacids = ['G', 'A', 'L', 'M', 'F', 'W', 'K', 'Q', 'E', 'S', 'P', 'V', 'I', 'C', 'Y', 'H', 'R', 'N', 'D', 'T']
-    label_encoder = LabelEncoder()
-    label_encoder.fit(np.array(aminoacids))
-
     integer_encoded = label_encoder.transform(pepseq_array)
-    onehot_encoder = OneHotEncoder(sparse=False, dtype=int)
     integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
     onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
     return onehot_encoded

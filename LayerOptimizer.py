@@ -23,13 +23,10 @@ jmax = 10
 jmin = 0
 
 
-def run(pseqs, scaled_vals):
-    input_shape = (pseqs.shape[1], pseqs.shape[2])
-    batch_size = int(0.01 * pseqs.shape[0])
-
-    split = train_test_split(pseqs, scaled_vals)
-    train_x, test_x, train_y, test_y = split
-
+def run(split_data: train_test_split, scaled_vals):
+    train_x, test_x, train_y, test_y = split_data
+    input_shape = (train_x.shape[1], train_x.shape[2])
+    batch_size = int(0.01 * train_x.shape[0])
     results = np.zeros((imax, jmax, 1))
 
     print("Optimizing number of layers")
@@ -59,7 +56,8 @@ def run(pseqs, scaled_vals):
     print("i_opt = ", iopt, "; j_opt = ",  jopt)
     output = build_sequential_model(input_shape, iopt, jopt)
     output.fit(train_x, train_y, epochs=num_epochs, batch_size=batch_size, verbose=0)
-    return output, split
+    output.save("opt_model")
+    return output
 
 
 def build_sequential_model(input_shape, i, j):

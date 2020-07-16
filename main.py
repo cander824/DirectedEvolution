@@ -12,35 +12,38 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
-import DataPreprocessing
 import LayerOptimizer
 import MutationGenerator
 import os
 import keras
-from sklearn.model_selection import train_test_split
+import numpy as np
+from DataProcessing import DataProcessing
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-file = 'proteindata.csv'
+filepath = 'proteindata.csv'
 
 
 def main():
-    pseqs, scaled_values = DataPreprocessing.run(file)
-    opt_model = None
-    split = train_test_split(pseqs, scaled_values)
+    processor = DataProcessing(filepath)
+    pseqs = processor.encoded_sequences
+    split = processor.split
+    scaled_vals = processor.scaled_values
     try:
-        opt_model = keras.models.load_model("opt_model")
-    except:
-        opt_model = LayerOptimizer.run(split, scaled_values)
+        model = keras.models.load_model("model")
+    except OSError:
+        model = LayerOptimizer.run(split, scaled_vals)
+    encoded_variant, scaled_score = MutationGenerator.run(pseqs, model)
+    decoded_variant = processor.decode(encoded_variant)
+    unscaled_score = processor.unscale_value(scaled_score)
 
-    train_x, test_x, train_y, test_y = split
-    opt_model.evaluate(test_x, test_y)
-    single_point_mutation_libary = MutationGenerator._build_single_point_mutation_library_(pseqs)
-    optimals = MutationGenerator._find_optimal_point_mutations_(single_point_mutation_libary, opt_model)
-    MutationGenerator._stack_mutations_(optimals, opt_model)
-    print("Done")
+    best_from_training_set = "MAPTLSEQTRQLVRASVPALQKHSVAISATMGRLLFERYPETRSLSELPERQLHKSASALLAYARSIDNPSALQAAIRRMVLSHARAGVQAVHYPLGWECLRDAIKEVLGPDATETLLQAWKEAYDFLAHLLSTKEAQVYAVLAE"
+    encoded_best = np.array([processor.encode(best_from_training_set)])
+    scaled_best = model.predict(encoded_best)
+    unscaled_best = processor.unscale_value(scaled_best)
+
+    print("Directed evolution variant score: ", unscaled_score)
+    print("Best variant score: ", unscaled_best)
 
 
 if __name__ == "__main__":
     main()
-
-

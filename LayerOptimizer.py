@@ -33,7 +33,7 @@ def run(split_data: train_test_split, scaled_vals):
     for i in range(imin, imax):
         for j in range(jmin, jmax):
             try:
-                model = build_sequential_model(input_shape, i, j)
+                model = _build_sequential_model_(input_shape, i, j)
                 model.fit(train_x, train_y, epochs=num_epochs, batch_size=batch_size, verbose=0)
                 test_loss = model.evaluate(test_x, test_y, verbose=0)
                 results[i, j, 0] = test_loss
@@ -54,13 +54,13 @@ def run(split_data: train_test_split, scaled_vals):
                     jopt = j
 
     print("i_opt = ", iopt, "; j_opt = ",  jopt)
-    output = build_sequential_model(input_shape, iopt, jopt)
+    output = _build_sequential_model_(input_shape, iopt, jopt)
     output.fit(train_x, train_y, epochs=num_epochs, batch_size=batch_size, verbose=0)
-    output.save("opt_model")
+    output.save("model")
     return output
 
 
-def build_sequential_model(input_shape, i, j):
+def _build_sequential_model_(input_shape, i, j):
     model = keras.models.Sequential()
     model.add(keras.layers.InputLayer(input_shape=input_shape))
 
